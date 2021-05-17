@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<title>Cidades</title>
+<meta charset="utf-8">
+
+<style>
+  .general-loader {
+    display: none;
+  }
+  .general-loader.show {
+    display: block;
+  }
+  .infoResult ul li{
+    display: inline-block;
+    margin-right: 15px;
+  }
+
+  .infoResult ul li:first-child{
+    width: 50%;
+  }
+  .infoResult ul li:nth-child(2){
+    width: 20%;
+  }
+  .infoResult ul li:nth-child(3){
+    width: 20%;
+  }
+</style>
+</head>
+<body>
+
+  <div class="container-location">
+  <input class="input-location" type="text">
+  <div class="general-loader">Carregando...</div>
+  </div>
+    
+  <div class="dropdown-locations" id="sourceMark">
+    <div class="error-text"></div>
+    <div class="dropdown-locations-item"></div>
+  </div>
+  <div class="invisible-mask"></div>
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/mark.js/8.6.0/mark.min.js"></script>
+<script>
+  function getHeadersBus(){
+    let headers = {
+      "X-Api-Key": "0f85601-f266-4992-ba6a-ef7ca937bc61"
+    }
+    return headers;
+  }
+
+  function getHeaders(){
+    let headers = {
+      "X-Api-Key": "42fTI7xqje8BaO2c1rM9N6s8a8goCUaE5Y5bDhPD"
+    }
+    return headers;
+  }
+
+  function highlight(text){
+    //var instance = new Mark(document.querySelector("ul.sourceMark"));
+    var instance = new Mark(document.getElementById("sourceMark"));
+    instance.unmark({
+      done: function(){
+        instance.mark(text)
+      }
+    })
+  }
+
+  function getLocations(city){
+    //https://bff-loyalty-esfera.k8s-cvc.com.br/esfera/road/locations
+      let urlBaseLocations = 'https://bff-loyalty-esfera.k8s-cvc.com.br/esfera/road/locations',
+          //url = `${urlBaseLocations}?q=${city}&owner=rodofacil&productType=ROD`;
+          url = `https://wohmd7hbwg.execute-api.sa-east-1.amazonaws.com/esf_prd/locations?productType=air&q=${city}`;
+      var settings = {
+        "url": url,
+        "method": 'GET',
+        "timeout": 0,
+        "headers": getHeaders()
+      };
+
+      $.ajax(settings).done(function (response) {
+        console.log(response);
+
+        let itemLength = response.locations.length;
+        
+        if(itemLength >= 1 ){
+          let i,
+          htmlResult = '';
+          for (i = 0; i < response.locations.length; i++) {
+            let item = response.locations[i],
+                city = item.city,
+                iata = item.IATA,
+                zondeId = item.masterCode;
+
+            htmlResult += `<div class="infoResult">`;
+            htmlResult += `<ul>`;
+            htmlResult += `<li>Cidade<br>${city}</li>`;
+            htmlResult += `<li>iata<br>${iata}</li>`;
+            htmlResult += `<li>Zone Id<br>${zondeId}</li>`;
+            htmlResult += `</ul>`;
+            htmlResult += `</div>`;
+          }
+          $('.general-loader').removeClass('show');
+          $('.dropdown-locations-item').html(htmlResult);          
+
+        } else {
+          locationError('<p>Não encontramos resultados.</p>')
+        }
+
+      }).fail(function (jqXHR, textStatus) {
+        console.log('API de rotas não esta respondendo ', + textStatus);
+        locationError('<p>Erro ao tentar achar a cidade.</p>')
+      });
+  }
+
+  function locations(){
+      var typingTimer;
+      var doneTypingInterval = 1500;  
+  
+      $('.input-location').keyup(function(){
+        $(this).addClass('keyup');
+
+        closeLocations();
+        clearTimeout(typingTimer);
+        var inputVal = $(this).val();
+
+        if (inputVal.length > 2) {
+            let city = sanitizeTitle(inputVal);
+            typingTimer = setTimeout(function(){ getLocations(city) }, doneTypingInterval);
+            locationError('');
+            $('.general-loader').addClass('show');
+        } else {
+          typingTimer = setTimeout(function(){ 
+            locationError('<p>Digite ao menos 3 letras e aguarde o resultado.</p>');
+          }, doneTypingInterval);
+        }
+          
+      });
+  }
+
+  function sanitizeTitle(text) {
+    text = text.trim();
+    text = text.toLowerCase();                                                     
+    text = text.replace(new RegExp('[ÁÀÂÃ]','gi'), 'a');
+    text = text.replace(new RegExp('[ÁÀÂÃ]','gi'), 'a');
+    text = text.replace(new RegExp('[ÉÈÊ]','gi'), 'e');
+    text = text.replace(new RegExp('[ÍÌÎ]','gi'), 'i');
+    text = text.replace(new RegExp('[ÓÒÔÕ]','gi'), 'o');
+    text = text.replace(new RegExp('[ÚÙÛ]','gi'), 'u');
+    text = text.replace(new RegExp('[Ç]','gi'), 'c');
+    text = text.replace(/\s/g, '-');
+    text = text.replace(/\./m, '');
+    text = text.replace(/\'/gm, '');
+    text = text.replace(/\,/gm, '');
+    return text;                 
+  }
+
+
+  function openLocations(){
+    $('.dropdown-locations-rodoviario').addClass('show');
+    $('.invisible-mask-bus').addClass('show');
+  }
+
+  function closeLocations(){
+    $('.dropdown-locations-rodoviario').removeClass('show').removeClass('error');
+    $('.dropdown-locations-rodoviario .error-text').html('');
+    $('.invisible-mask-bus').removeClass('show');
+  }
+
+  function locationError(msgError){
+    $('.dropdown-locations').addClass('error').addClass('show')
+    $('.dropdown-locations .error-text').html(msgError);
+    $('.invisible-mask-bus').addClass('show');
+  }
+
+
+  function init(){
+    locations();
+  }
+
+  $( document ).ready(function() {
+    init();
+  });
+</script>
+
+</body>
+</html>
