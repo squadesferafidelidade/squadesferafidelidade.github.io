@@ -5,6 +5,11 @@
 <meta charset="utf-8">
 
 <style>
+  body {
+    font-family: Arial;
+    font-size: 18px;
+    color: #3b3b3b;
+  }
   .general-loader {
     display: none;
   }
@@ -25,20 +30,50 @@
   .infoResult ul li:nth-child(3){
     width: 20%;
   }
+  
+  .container-location {
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    padding: 15px;
+  }
+
+  .container-location h1 {
+    font-size: 26px;
+  }
+
+  .container-location input{
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 18px;
+    margin-bottom: 20px;
+    padding: 5px;
+    height: 40px;
+    width: 280px;
+  }
+
+  .dropdown-locations {
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    padding: 15px;
+  }
 </style>
 </head>
 <body>
 
   <div class="container-location">
-  <input class="input-location" type="text">
-  <div class="general-loader">Carregando...</div>
+    <h1>Busca de localidade</h1>
+    <input class="input-location" type="text" placeholder="Digite um local...">
+    
+
+    <div class="dropdown-locations" id="sourceMark">
+      <div class="general-loader">Carregando...</div>
+      <div class="error-text"></div>
+      <div class="dropdown-locations-item"></div>
+    </div>
   </div>
     
-  <div class="dropdown-locations" id="sourceMark">
-    <div class="error-text"></div>
-    <div class="dropdown-locations-item"></div>
-  </div>
-  <div class="invisible-mask"></div>
+  
+
 
 
 
@@ -72,10 +107,10 @@
 
   function getLocations(city){
     //https://bff-loyalty-esfera.k8s-cvc.com.br/esfera/road/locations
-      let urlBaseLocations = 'https://bff-loyalty-esfera.k8s-cvc.com.br/esfera/road/locations',
+      //let urlBaseLocations = 'https://bff-loyalty-esfera.k8s-cvc.com.br/esfera/road/locations',
           //url = `${urlBaseLocations}?q=${city}&owner=rodofacil&productType=ROD`;
-          url = `https://wohmd7hbwg.execute-api.sa-east-1.amazonaws.com/esf_prd/locations?productType=air&q=${city}`;
-      var settings = {
+      let url = `https://wohmd7hbwg.execute-api.sa-east-1.amazonaws.com/esf_prd/locations?productType=air&q=${city}`;
+      let settings = {
         "url": url,
         "method": 'GET',
         "timeout": 0,
@@ -98,9 +133,9 @@
 
             htmlResult += `<div class="infoResult">`;
             htmlResult += `<ul>`;
-            htmlResult += `<li>Cidade<br>${city}</li>`;
-            htmlResult += `<li>iata<br>${iata}</li>`;
-            htmlResult += `<li>Zone Id<br>${zondeId}</li>`;
+            htmlResult += `<li>CIDADE<br>${city}</li>`;
+            htmlResult += `<li>IATA<br>${iata}</li>`;
+            htmlResult += `<li>ZONE ID<br>${zondeId}</li>`;
             htmlResult += `</ul>`;
             htmlResult += `</div>`;
           }
